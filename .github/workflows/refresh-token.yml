@@ -1,0 +1,35 @@
+name: Refresh Instagram token
+
+# Instagram Login long-lived tokens expire after 60 days unless refreshed.
+# Refreshing weekly keeps a wide margin. Writing the new value back needs
+# SECRETS_PAT: a fine-grained token for this repository with
+# "Secrets: Read and write" permission.
+on:
+  schedule:
+    - cron: "23 1 * * 0"   # Sundays 10:23 KST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh and store token
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.SECRETS_PAT }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::SECRETS_PAT is not set, so the refreshed Instagram token cannot be saved. The current token expires 60 days after it was issued."
+            exit 1
+          fi
+          response=$(curl -sS --fail-with-body -G "https://graph.instagram.com/refresh_access_token" \
+            --data-urlencode "grant_type=ig_refresh_token" \
+            --data-urlencode "access_token=$IG_ACCESS_TOKEN") || { echo "::error::refresh failed: $response"; exit 1; }
+          new_token=$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
+          expires_in=$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("expires_in", ""))')
+          echo "::add-mask::$new_token"
+          printf '%s' "$new_token" | gh secret set IG_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY"
+          echo "token refreshed; valid for $((expires_in / 86400)) more days"

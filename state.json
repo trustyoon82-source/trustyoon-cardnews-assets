@@ -1,0 +1,5 @@
+{
+  "active_from_kst": "2026-10-13",
+  "note": "PC renders the weekly batch at 4:5 and pushes queue/<NNNN>-<slug>; .github/workflows/publish.yml posts one per KST day at 18:00 via the Instagram API and records receipts/. Until 2026-10-12 the PC still posts the remaining 3:4 items itself.",
+  "last_published": {}
+}

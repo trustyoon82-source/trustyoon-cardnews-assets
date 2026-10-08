@@ -1,0 +1,67 @@
+name: Publish card news to Instagram
+
+# GitHub starts scheduled runs hours late (4-8h observed on this account), so
+# several runs are scheduled through the day. The first one to start before
+# 18:00 KST waits for 18:00 and posts; the rest see today's post in state.json
+# and exit. Nothing is posted after 23:00 KST.
+on:
+  schedule:
+    - cron: "7 3 * * *"    # 12:07 KST
+    - cron: "7 5 * * *"    # 14:07 KST
+    - cron: "7 7 * * *"    # 16:07 KST
+    - cron: "37 8 * * *"   # 17:37 KST
+    - cron: "17 10 * * *"  # 19:17 KST
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = token/account only, publish = post the next queued item"
+        type: choice
+        options: [check, publish]
+        default: check
+      publish_now:
+        description: "publish: skip waiting for 18:00 (still at most one post per KST day)"
+        type: boolean
+        default: false
+      dry_run:
+        description: "publish: stop right before creating any Instagram container"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run publisher
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          PUBLISH_NOW: ${{ inputs.publish_now && '1' || '0' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python scripts/publish_instagram_api.py "${{ inputs.mode || 'publish' }}"
+
+      - name: Record receipt and state
+        if: always()
+        run: |
+          git add receipts state.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "nothing to record"
+            exit 0
+          fi
+          git config user.name "cardnews-publisher"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record Instagram publish $(date -u +%Y-%m-%dT%H:%MZ)"
+          for attempt in 1 2 3; do
+            git pull --rebase --quiet && git push --quiet && exit 0
+            sleep 5
+          done
+          echo "::error::could not push the receipt; the post is live but state.json was not updated"
+          exit 1
