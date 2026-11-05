@@ -892,7 +892,7 @@ const CODES = {
   'd3-md': {g:'3인', r:'MD', cls:'s-d3', label:'3인 MD'},
   'd3-2d': {g:'3인', r:'2D', cls:'s-d3', label:'3인 2D'},
   'd3-3d': {g:'3인', r:'3D', cls:'s-d3', label:'3인 3D'},
-  'd3':    {g:'3인', r:'주간', cls:'s-d3', label:'주간 3인'},
+  'd3':    {g:'3인', r:'D', cls:'s-d3', label:'3인 D'},
   'd2-1d': {g:'2인', r:'1D', cls:'s-d2', label:'2인 1D'},
   'd2-2d': {g:'2인', r:'2D', cls:'s-d2', label:'2인 2D'},
   'd2':    {g:'2인', r:'주간', cls:'s-d2', label:'주간 2인'},
@@ -1299,13 +1299,13 @@ function currentCode() {
 }
 function updateSchedLine() {
   const el = $('#schedLine');
-  if (!cap.own || !cap.loaded) { el.hidden = true; return; }
+  if (!cap.loaded) { el.hidden = true; return; }
   el.hidden = false;
   const now = new Date();
   const doc = monthDoc(now);
   const hasMonth = !!(doc && doc.days && Object.keys(doc.days).some(k => CODES[doc.days[k]]));
   if (!hasMonth) {
-    el.innerHTML = '<span class="k">근무표</span><span>이번 달 내 근무가 비어 있어요</span><button type="button" data-go="roster">입력하기</button>';
+    el.innerHTML = '<span class="k">근무표</span><span>이번 달 근무가 아직 안 들어왔어요</span>';
     return;
   }
   const cur = currentCode();
@@ -1327,7 +1327,7 @@ function updateSchedLine() {
 }
 let autoDay = '', manualDay = '';
 function maybeAutoSelect() {
-  if (!cap.own || !cap.loaded) return;
+  if (!cap.loaded) return;
   const today = dk(new Date());
   if (autoDay === today || manualDay === today) return;
   const cur = currentCode();
@@ -1338,9 +1338,10 @@ function maybeAutoSelect() {
   let role = state.role, nvar = state.nvar;
   if (ROLES[c]) role = c;
   else if (c === 'd3' || c === 'd2') {
-    const g = GROUPS.find(x => x.id === c);
-    const last = store.get('last:' + c, g.roles[0]);
-    role = g.roles.indexOf(last) >= 0 ? last : g.roles[0];
+    /* 표에 D로만 적힌 3인 날은 MD가 아니라서 2D·3D 중 마지막에 고른 쪽으로 */
+    const pool = c === 'd3' ? ['d3-2d', 'd3-3d'] : GROUPS.find(x => x.id === c).roles;
+    const last = store.get('last:' + c, pool[0]);
+    role = pool.indexOf(last) >= 0 ? last : pool[0];
   } else if (isNight(c)) {
     role = 'n';
     if (c === 'n3') nvar = '3';
@@ -1351,6 +1352,38 @@ function maybeAutoSelect() {
     store.set('role', role); store.set('nvar', nvar);
     renderAll();
   }
+}
+
+/* ---- 내 근무표: 링크 끝 #s=YYYY-MM.코드(하루 한 글자)를 이 기기에만 저장. 저장소에는 근무표가 없어요 ---- */
+const SCODE = { M: 'd3-md', A: 'd3-2d', B: 'd3-3d', D: 'd3', '1': 'd2-1d', '2': 'd2-2d', d: 'd2', N: 'n3', n: 'n2', Y: 'n', x: 'off' };
+function readShare() {
+  const h = location.hash.slice(1);
+  if (!/(^|&)s=/.test(h)) return;
+  const saved = store.get('mysched', {});
+  let got = 0;
+  h.split('&').forEach(part => {
+    const m = /^s=(\d{4})-(\d{2})\.([MABD12dNnYx-]+)$/.exec(part);
+    if (!m) return;
+    const n = new Date(+m[1], +m[2], 0).getDate();
+    if (m[3].length !== n) return;
+    const days = {};
+    for (let i = 0; i < n; i++) { const c = SCODE[m[3][i]]; if (c) days[String(i + 1)] = c; }
+    saved[m[1] + '-' + m[2]] = days;
+    got++;
+  });
+  if (got) store.set('mysched', saved);
+}
+function applyMySched() {
+  const saved = store.get('mysched', {});
+  const m = {};
+  Object.keys(saved || {}).forEach(k => {
+    if (/^\d{4}-\d{2}$/.test(k) && saved[k] && typeof saved[k] === 'object') m[k] = { days: saved[k] };
+  });
+  cap.sched = m;
+  cap.loaded = Object.keys(m).length > 0;
+  if (!cap.loaded) return;
+  maybeAutoSelect();
+  updateNow();
 }
 
 /* ---- tabs ---- */
@@ -1448,9 +1481,11 @@ $$('.tabbar button').forEach(b => b.addEventListener('click', () => go(b.dataset
 window.addEventListener('hashchange', () => showTab(location.hash.slice(1), true));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { maybeAutoSelect(); renderAll(); } });
 
+readShare();
 showTab(location.hash.slice(1), false);
 renderAll();
 setInterval(updateNow, 20000);
+applyMySched();
 })();
 </script>
 </body>
