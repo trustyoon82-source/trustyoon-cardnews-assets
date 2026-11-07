@@ -1310,11 +1310,12 @@ function updateSchedLine() {
   }
   const cur = currentCode();
   const parts = [];
-  if (cur && cur.carry) parts.push('지금 <b>야간</b> (어제 15:00 출근)');
+  if (cur && cur.carry) parts.push('지금 <b>야간</b> (어제 15:00 출근 · 09:00 퇴근)');
   else parts.push(cur ? '오늘 <b>' + CODES[cur.code].label + '</b>' : '오늘 <b>입력 안 됨</b>');
   const from = cur && cur.carry ? 0 : 1;
   const tm = entryFor(addDays(now, 1));
-  if (!(cur && cur.carry) && tm === 'off') parts.push('내일 <b>휴무</b>');
+  /* 야간은 다음 날 09:00에 끝나서, 근무표에 휴무로 적힌 다음 날도 아침까지는 근무 중 */
+  if (!(cur && cur.carry) && tm === 'off') parts.push(cur && isNight(cur.code) ? '내일 <b>09:00 퇴근</b> 후 휴무' : '내일 <b>휴무</b>');
   for (let i = from; i <= 21; i++) {
     const day = addDays(now, i), c = entryFor(day);
     if (c && c !== 'off') {
