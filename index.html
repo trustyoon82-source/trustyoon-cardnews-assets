@@ -500,7 +500,7 @@ button{font:inherit;color:inherit}
         <ul class="rules">
           <li>진동으로 받기. 어르신 계신 곳에서 소리 알림은 피하는 게 좋아요.</li>
           <li>알림 제목만 보고도 할 일이 보이게 짧게.</li>
-          <li>야간은 휴게 끝(01:50)과 대기 끝(05:20) 두 개가 제일 중요해요.</li>
+          <li>야간 N1은 휴게 끝(01:50)과 대기 끝(05:20) 두 개가 제일 중요해요.</li>
           <li>‘목록 복사’로 메모장에 붙여 두고, 휴대폰 알람을 이 시간대로 맞춰 두면 돼요.</li>
         </ul>
       </div>
@@ -537,15 +537,15 @@ button{font:inherit;color:inherit}
         <div class="tbl wide-4" id="cmp2"></div>
       </div>
       <div class="block">
-        <h3>야간 15:00–18:00, 그날 주간 인원에 따라</h3>
-        <p class="lede">노란 줄이 서로 다른 칸이에요.</p>
+        <h3>야간 N1 15:00–18:00, 그날 주간 인원에 따라</h3>
+        <p class="lede">노란 줄이 서로 다른 칸이에요. 야간 N2는 19:30까지 출근해서 20:00에 시작하고 다음날 11:00에 퇴근해요. N2 업무 순서표는 아직 없어요.</p>
         <div class="tbl wide-3" id="cmpN"></div>
       </div>
 
-      <p class="note">출근·퇴근 시각은 각 표의 첫 칸과 마지막 칸 기준이에요. MD 07:40, 3인 2D 07:55, 3D 08:35, 2인 1D 07:55, 2인 2D 08:40, 야간 15:00. 정식 근무시간과 다를 수 있어요.</p>
+      <p class="note">출근·퇴근 시각은 각 표의 첫 칸과 마지막 칸 기준이에요. MD 07:40, 3인 2D 07:55, 3D 08:35, 2인 1D 07:55, 2인 2D 08:40, 야간 N1 15:00. 야간 N2(19:30 출근 · 20:00–다음날 11:00)는 따로 받은 시각이에요. 정식 근무시간과 다를 수 있어요.</p>
     </section>
 
-    <p class="foot">원본은 요양보호사 업무매뉴얼 7장(2인 1D·2D, 3인 MD·2D·3D, 야간 1N 주간·야간)이에요. 띄어쓰기만 다듬고 내용은 그대로 옮겼고, ‘전신입력’만 ‘전산입력’으로 고쳤어요. 체크 표시는 이 기기에만 저장돼요.</p>
+    <p class="foot">원본은 요양보호사 업무매뉴얼 7장(2인 1D·2D, 3인 MD·2D·3D, 야간 1N 주간·야간)이에요. 야간 N2는 근무시간만 따로 받아 넣었어요. 띄어쓰기만 다듬고 내용은 그대로 옮겼고, ‘전신입력’만 ‘전산입력’으로 고쳤어요. 체크 표시는 이 기기에만 저장돼요.</p>
   </main>
 </div>
 
@@ -754,7 +754,14 @@ const N_NIGHT = [
   ['08:25','08:40','인원점검, 구강케어, 기저귀케어'],
   ['08:40','09:00','인수인계']
 ];
-const TONE = {'아침':'peach','오전':'sky','점심':'lemon','오후':'mint','저녁':'lav','출근 후 · 주간 업무':'mint','저녁 · 취침 준비':'lav','휴게':'grey','새벽':'night','아침 · 인계':'peach'};
+/* 야간 N2: 20:00 시작, 30분 전까지 출근, 다음날 11:00 퇴근. 시간별 업무표는 아직 못 받아서 시각만 */
+const N2_ROWS = [
+  '#출근',
+  ['19:30','19:30','출근 완료 (20:00 근무 시작 30분 전)'],
+  '#야간 근무',
+  ['20:00','11:00','N2 야간 근무','시간별 할 일은 N2 업무표를 받으면 여기에 채워져요']
+];
+const TONE = {'아침':'peach','오전':'sky','점심':'lemon','오후':'mint','저녁':'lav','출근 후 · 주간 업무':'mint','저녁 · 취침 준비':'lav','휴게':'grey','새벽':'night','아침 · 인계':'peach','출근':'peach','야간 근무':'night'};
 
 const ROLES = {
   'd3-md': {
@@ -846,12 +853,24 @@ const ROLES = {
       {at:'17:15', label:'워커자·엘리베이터 운행 · 식사수발'}
     ]
   },
+  'nb': {
+    group:'n', chip:'N2', pill:'야간 N2 · 20:00–11:00', arrive:'19:30', startLabel:'19:30까지 출근', end:'11:00', endNote:'다음날 오전',
+    src:'N2 근무시간 · 업무 순서표는 아직 없어요', rows:N2_ROWS,
+    facts:[['출근','19:30까지'],['근무 시작','20:00'],['퇴근','다음날 11:00'],['업무 순서','N2 표 받으면 추가']],
+    docs:[], docsEmpty:'N2 업무표를 받으면 담당 서류도 여기에 넣어요.',
+    alarmNote:'근무 중 알림은 N2 업무 순서표를 받으면 넣어요.',
+    alarms:[
+      {pre:true, at:'당일 18:00', label:'1시간 30분 뒤 출근 (19:30까지)'},
+      {pre:true, at:'당일 19:00', label:'30분 뒤 출근 · 20:00 근무 시작'}
+    ]
+  },
   'n': {
-    group:'n', chip:'N1', pill:'야간', end:'09:00', src:'업무매뉴얼(야간 근무: 1N 주간근무 + 야간 근무)', rows:null,
+    group:'n', chip:'N1', pill:'야간 N1', arrive:'15:00', end:'09:00', endNote:'다음날 아침', src:'업무매뉴얼(야간 근무: 1N 주간근무 + 야간 근무)', rows:null,
+    alarmNote:'금요일 아침이 끼는 야간은 05:20 알림에 ‘당체크’를, 월요일 아침이 끼는 야간은 ‘의복교체’를 같이 넣어요.',
     facts:[['근무','15:00–다음날 09:00'],['휴게','21:00–02:00'],['라운딩','20:00 · 02:00 · 05:30'],['소등·문단속','21:00'],['약','19:00 취침 전 · 08:05 투약'],['인수인계','08:40']],
     docs:['근무일지','인원점검','야간준비상태확인점검표','외출·면회·외박일지 시스템입력','야간 근무일지·인수인계일지 02:00','야간 근무일지·인수인계일지 05:30'],
     alarms:[
-      {pre:true, at:'당일 13:30', label:'오늘 야간 · 15:00 출근'},
+      {pre:true, at:'당일 13:30', label:'오늘 야간 N1 · 15:00 출근'},
       {at:'16:30', label:'식사수발 (주간 2명인 날은 2층 식사준비부터)'},
       {at:'17:50', label:'인원점검 · 야간점검표 결재 → 18:00 근무일지·시스템입력·약 준비'},
       {at:'19:00', label:'기저귀 · 안약 · 취침 전 약 제공'},
@@ -868,7 +887,7 @@ const ROLES = {
 const GROUPS = [
   {id:'d3', label:'주간 3인', roles:['d3-md','d3-2d','d3-3d']},
   {id:'d2', label:'주간 2인', roles:['d2-1d','d2-2d']},
-  {id:'n',  label:'야간', roles:['n']}
+  {id:'n',  label:'야간', roles:['nb','n']}
 ];
 const COMPARE = [
   ['근무', ['07:40–17:00','07:55–18:00','08:35–18:00','07:55–17:10','08:40–18:00']],
@@ -888,6 +907,7 @@ const COMPARE = [
   ['없을 때 맡는 일', ['위생원 없음 → 세탁 / 간호조무사 없음 → 약·핫팩·발열','—','—','—','간호조무사 없음 → 약·핫팩·발열']]
 ];
 /* ---- 근무 코드 ---- */
+/* 야간 코드 n3·n2는 그날 주간 인원(3명·2명)이라는 뜻이에요. N1·N2 자리와는 달라요 */
 const CODES = {
   'd3-md': {g:'3인', r:'MD', cls:'s-d3', label:'3인 MD'},
   'd3-2d': {g:'3인', r:'2D', cls:'s-d3', label:'3인 2D'},
@@ -903,8 +923,10 @@ const CODES = {
 };
 
 /* ---- state ---- */
+/* 예전 판은 야간이 N1('n') 하나뿐이라, 야간 자리를 한 번도 안 고른 기기는 N2로 */
+const savedRole = store.get('role', '');
 const state = {
-  role: ROLES[store.get('role', '')] ? store.get('role', '') : 'd3-md',
+  role: !ROLES[savedRole] ? 'd3-md' : savedRole === 'n' && !store.get('nslot', '') ? 'nb' : savedRole,
   nvar: store.get('nvar', '3') === '2' ? '2' : '3',
   tab: 'today'
 };
@@ -914,6 +936,10 @@ const cap = { db: null, user: null, assets: null, own: false, loaded: false, sch
 const ymKey = (y, m) => y + '-' + pad(m + 1);
 const addDays = (date, n) => { const d = new Date(date); d.setDate(d.getDate() + n); return d; };
 const isNight = c => typeof c === 'string' && c.charAt(0) === 'n';
+/* 근무표는 야간인지만 알려 줘요. N1(15:00–09:00)인지 N2(20:00–11:00)인지는 이 기기에서 마지막에 고른 자리(처음엔 N2) */
+const nslot = () => store.get('nslot', 'nb') === 'n' ? 'n' : 'nb';
+const nightRole = () => ROLES[nslot()];
+const codeLabel = c => isNight(c) ? '야간 ' + nightRole().chip + ' · ' + nightRole().arrive + ' 출근' : CODES[c].label;
 const monthDoc = date => cap.sched[ymKey(date.getFullYear(), date.getMonth())] || null;
 function entryFor(date) {
   const doc = monthDoc(date);
@@ -935,17 +961,19 @@ const evLine = e => esc(e.x) + (e.d ? ' (' + esc(e.d) + ')' : '');
 function nightBase() {
   const d = new Date(), h = d.getHours();
   if (h >= 12) return 0;
+  const ended = h * 60 + d.getMinutes() >= toMin(ROLES[state.role].end);
   const ye = entryFor(addDays(d, -1));
-  if (isNight(ye)) return 1;
+  /* 어제 야간이 끝났고 오늘 밤도 야간이면 오늘 근무 기준으로 */
+  if (isNight(ye)) return ended && isNight(entryFor(d)) ? 0 : 1;
   if (ye) return 0;
-  if (h < 9) return 1;
+  if (!ended) return 1;
   return isNight(entryFor(d)) ? 0 : 1;
 }
 
 function rowsFor(id) {
   const R = ROLES[id];
   const isN = R.group === 'n';
-  const src = isN ? ['#출근 후 · 주간 업무'].concat(N_EVE[state.nvar], N_NIGHT) : R.rows;
+  const src = id === 'n' ? ['#출근 후 · 주간 업무'].concat(N_EVE[state.nvar], N_NIGHT) : R.rows;
   const secs = []; let cur = null;
   for (const it of src) {
     if (typeof it === 'string') { cur = { name: it.slice(1), rows: [] }; secs.push(cur); continue; }
@@ -1001,14 +1029,16 @@ function renderPicker() {
   $('#groupSeg').innerHTML = GROUPS.map(g =>
     '<button type="button" data-g="' + g.id + '" aria-pressed="' + (g.id === R.group) + '">' + g.label + '</button>').join('');
   if (R.group === 'n') {
-    $('#roleChips').innerHTML = [['2', '주간 2명인 날'], ['3', '주간 3명인 날']].map(v =>
-      '<button type="button" data-v="' + v[0] + '" aria-pressed="' + (state.nvar === v[0]) + '">' + v[1] + '</button>').join('');
+    /* N2는 한 가지, N1은 그날 주간 인원에 따라 15:00–18:00이 달라요 */
+    $('#roleChips').innerHTML = [['nb', '', 'N2 · 20:00'], ['n', '2', 'N1 · 주간 2명'], ['n', '3', 'N1 · 주간 3명']].map(o =>
+      '<button type="button" data-r="' + o[0] + '"' + (o[1] ? ' data-v="' + o[1] + '"' : '')
+      + ' aria-pressed="' + (state.role === o[0] && (!o[1] || state.nvar === o[1])) + '">' + o[2] + '</button>').join('');
   } else {
     const g = GROUPS.find(x => x.id === R.group);
     $('#roleChips').innerHTML = g.roles.map(id =>
       '<button type="button" data-r="' + id + '" aria-pressed="' + (id === state.role) + '">' + ROLES[id].chip + '</button>').join('');
   }
-  $('#rolePill').textContent = R.group === 'n' ? '야간 · 주간 ' + state.nvar + '명 날' : R.pill;
+  $('#rolePill').textContent = state.role === 'n' ? '야간 N1 · 주간 ' + state.nvar + '명 날' : R.pill;
 }
 
 /* ---- render: timeline ---- */
@@ -1023,7 +1053,7 @@ function renderTimeline() {
   for (const sec of secs) {
     if (!sec.rows.length) continue;
     const f = sec.rows[0], l = sec.rows[sec.rows.length - 1];
-    h += '<div class="sec" data-tone="' + (TONE[sec.name] || 'mint') + '"><span class="dot"></span><h3>' + esc(sec.name) + '</h3><span class="num">' + f.a + '–' + l.b + '</span></div><div class="rows">';
+    h += '<div class="sec" data-tone="' + (TONE[sec.name] || 'mint') + '"><span class="dot"></span><h3>' + esc(sec.name) + '</h3><span class="num">' + (f.a === l.b ? f.a : f.a + '–' + l.b) + '</span></div><div class="rows">';
     for (const r of sec.rows) {
       const bell = bells.has(r.a) && !used.has(r.a); if (bell) used.add(r.a);
       const point = r.s === r.e;
@@ -1039,7 +1069,7 @@ function renderTimeline() {
     }
     h += '</div>';
   }
-  h += '<div class="endrow"><b class="num">' + R.end + '</b><span>퇴근' + (R.group === 'n' ? ' (다음날 아침)' : '') + '</span></div>';
+  h += '<div class="endrow"><b class="num">' + R.end + '</b><span>퇴근' + (R.endNote ? ' (' + R.endNote + ')' : '') + '</span></div>';
   if (R.leftover) {
     h += '<div class="leftover"><p>표에는 퇴근 뒤에도 두 칸이 더 있어요. 3인 3D 표와 문구가 같아서 양식을 복사하다 남은 칸으로 보여요. 선임께 한 번 확인해 보세요.</p><ul>'
       + R.leftover.map(x => '<li><span class="num">' + x[0] + '–' + x[1] + '</span><span>' + esc(x[2]) + '</span></li>').join('') + '</ul></div>';
@@ -1087,7 +1117,7 @@ function docsLeft(R) {
 }
 function renderDocs() {
   const R = ROLES[state.role];
-  if (!R.docs.length) { $('#docs').innerHTML = '<p class="empty">표에 따로 적힌 담당 서류가 없어요. 3인 근무 서류는 MD(1D)가 써요.</p>'; return; }
+  if (!R.docs.length) { $('#docs').innerHTML = '<p class="empty">' + esc(R.docsEmpty || '표에 따로 적힌 담당 서류가 없어요. 3인 근무 서류는 MD(1D)가 써요.') + '</p>'; return; }
   const done = new Set(store.get(docKey(), []));
   $('#docs').innerHTML = R.docs.map((t, i) =>
     '<button type="button" class="doc" data-i="' + i + '" aria-pressed="' + done.has(i) + '"><span class="box">' + CHECK + '</span>' + esc(t) + '</button>').join('');
@@ -1121,6 +1151,7 @@ function renderTodayEv() {
 /* ---- the character's one-liner ---- */
 function shortTask(s) { const p = s.split(/,| 및 /)[0].trim(); return p.length > 12 ? p.slice(0, 12) + '…' : p; }
 function tipFor(mode, cur, next, t, R) {
+  if (mode === 'off') return '오늘은 푹 쉬어요';
   if (mode === 'before') return '출근 ' + span(cache.start - t) + ' 전이에요';
   if (mode === 'after') { const left = docsLeft(R); return left ? '서류 ' + left + '개만 확인해요' : '오늘도 수고했어요!'; }
   if (mode === 'gap') return next ? next.a + ' ' + shortTask(next.text) : '잠깐 정리해요';
@@ -1133,6 +1164,7 @@ function tipFor(mode, cur, next, t, R) {
   if (/프로그램/.test(x)) { const p = progNote(cur); if (p) return '오늘은 ' + shortTask(p.replace(/^오늘 \d{1,2}:\d{2} /, '').replace(/&amp;/g, '&')); }
   if (/전산입력|일지|시스템입력/.test(x)) return '기록은 바로바로!';
   if (/담당|진행/.test(x)) return '내가 맡은 시간이에요';
+  if (cur.e - cur.s >= 360) return R.end + ' 퇴근까지 힘내요';
   if (next && next.s - t <= 10) return span(next.s - t) + ' 뒤 ' + shortTask(next.text);
   if (/식사|배식|수발|간식/.test(x)) return '천천히, 사레 조심!';
   return '좋아요, 차근차근!';
@@ -1156,7 +1188,11 @@ function updateNow() {
   let cur = null;
   for (const r of rows) if (r.s <= t && t < r.e) cur = r;
   const next = rows.find(r => r.s > t) || null;
-  const mode = t < cache.start ? 'before' : t >= cache.end ? 'after' : cur ? 'on' : 'gap';
+  /* 근무표에 오늘이 휴무면 지금 할 일 대신 휴무 (직접 역할을 고른 날은 빼고) */
+  const sc = cap.loaded && manualDay !== dk(d) ? currentCode() : null;
+  const off = !!(sc && sc.code === 'off');
+  if (off) cur = null;
+  const mode = off ? 'off' : t < cache.start ? 'before' : t >= cache.end ? 'after' : cur ? 'on' : 'gap';
 
   const K = $('#nowK'), T = $('#nowTask'), C = $('#nowChips'), M = $('#nowMeta'), N = $('#nextBox'), BW = $('#nowBarWrap'), B = $('#nowBar');
   if (mode === 'on') {
@@ -1173,8 +1209,13 @@ function updateNow() {
     T.textContent = next ? next.a + ' 시작까지 ' + span(next.s - t) : '정리 시간';
     C.hidden = true; BW.hidden = true; M.hidden = true;
   } else if (mode === 'before') {
-    K.innerHTML = '<strong>출근 전</strong><span class="num">' + hm(cache.start) + ' 시작</span>';
+    K.innerHTML = '<strong>출근 전</strong><span class="num">' + (R.startLabel || hm(cache.start) + ' 시작') + '</span>';
     T.textContent = span(cache.start - t) + ' 남음';
+    C.hidden = true; BW.hidden = true; M.hidden = true;
+  } else if (mode === 'off') {
+    const afterNight = isNight(entryFor(addDays(d, -1)));
+    K.innerHTML = '<strong>오늘 휴무</strong>' + (afterNight ? '<span class="num">' + nightRole().end + ' 야간 퇴근</span>' : '');
+    T.textContent = afterNight ? '야간 끝, 오늘은 쉬는 날이에요' : '오늘은 쉬는 날이에요';
     C.hidden = true; BW.hidden = true; M.hidden = true;
   } else {
     K.innerHTML = '<strong>근무 끝</strong><span class="num">' + R.end + ' 퇴근</span>';
@@ -1182,7 +1223,11 @@ function updateNow() {
     C.hidden = true; BW.hidden = true; M.hidden = true;
   }
 
-  if (mode === 'after') {
+  if (mode === 'off') {
+    const nx = nextWork(d);
+    N.hidden = !nx;
+    N.innerHTML = nx ? '<span class="k">다음 근무</span><span class="x"><span class="num">' + md(nx.day) + '</span>' + esc(codeLabel(nx.code)) + '</span><span class="in">' + (nx.i === 1 ? '내일' : nx.i + '일 뒤') + '</span>' : '';
+  } else if (mode === 'after') {
     const left = docsLeft(R);
     N.hidden = !left;
     N.innerHTML = left ? '<span class="k">서류</span><span class="x">체크 안 한 서류 ' + left + '개</span><span class="in">아래 오늘 쓸 서류에서 확인</span>' : '';
@@ -1195,20 +1240,22 @@ function updateNow() {
   }
 
   const notes = [];
-  if (R.group === 'n') {
+  if (off) {
+    /* 휴무 날엔 안내 없음 */
+  } else if (R.group === 'n') {
     const m = shiftDate(); m.setDate(m.getDate() + 1);
-    const md = (m.getMonth() + 1) + '/' + m.getDate();
-    if (m.getDay() === 5) notes.push('이번 야간 아침(' + md + ' 금) 당체크 있어요');
-    if (m.getDay() === 1) notes.push('이번 야간 아침(' + md + ' 월) 의복교체 있어요');
+    const mdd = (m.getMonth() + 1) + '/' + m.getDate();
+    if (m.getDay() === 5) notes.push('이번 야간 아침(' + mdd + ' 금) 당체크 있어요');
+    if (m.getDay() === 1) notes.push('이번 야간 아침(' + mdd + ' 월) 의복교체 있어요');
   } else if (R.group === 'd2' && (d.getDay() === 0 || d.getDay() === 6)) {
     notes.push('주말 비고: 오전 프로그램 3day, 오후 프로그램 1day. 2인 근무에선 누가 맡는지 확인하세요');
   }
   const bn = $('#dayBanner');
   bn.hidden = !notes.length; bn.textContent = notes.join(' · ');
 
-  $('#hero').classList.toggle('night', R.group === 'n');
+  $('#hero').classList.toggle('night', R.group === 'n' && !off);
   const resting = mode === 'on' && /휴게|휴식|대기/.test(cur.text);
-  $('#buddySvg').setAttribute('data-mood', (mode === 'after' || mode === 'gap' || resting) ? 'happy' : 'open');
+  $('#buddySvg').setAttribute('data-mood', (mode === 'after' || mode === 'gap' || mode === 'off' || resting) ? 'happy' : 'open');
   const tip = tipFor(mode, cur, next, t, R);
   const bub = $('#bubble');
   if (bub.textContent !== tip) {
@@ -1219,7 +1266,7 @@ function updateNow() {
   $$('#timeline .row').forEach(el => {
     const r = cache.byKey.get(el.dataset.k); if (!r) return;
     el.classList.toggle('now', r === cur);
-    el.classList.toggle('past', r.s === r.e ? r.s < t : r.e <= t);
+    el.classList.toggle('past', !off && (r.s === r.e ? r.s < t : r.e <= t));
   });
   updateSchedLine();
   renderTodayEv();
@@ -1279,11 +1326,12 @@ function nightTable() {
 /* ---- alarms ---- */
 function renderAlarms() {
   const R = ROLES[state.role];
-  const nIn = R.alarms.filter(a => !a.pre).length;
-  $('#alarmTitle').textContent = (R.group === 'n' ? '야간 N1' : R.pill) + ' · 근무 중 ' + nIn + '개 + 근무 전 1개';
+  const nIn = R.alarms.filter(a => !a.pre).length, nPre = R.alarms.length - nIn;
+  $('#alarmTitle').textContent = (state.role === 'n' ? '야간 N1' : R.pill) + ' · ' + (nIn ? '근무 중 ' + nIn + '개 + ' : '') + '근무 전 ' + nPre + '개';
   $('#alarmList').innerHTML = R.alarms.map(a =>
     '<div class="alarm' + (a.pre ? ' pre' : '') + '"><span class="at">' + a.at + '</span><span class="lb">' + esc(a.label) + '</span></div>').join('');
-  $('#alarmNight').hidden = R.group !== 'n';
+  $('#alarmNight').hidden = !R.alarmNote;
+  $('#alarmNight').textContent = R.alarmNote || '';
   $('#copyFallback').hidden = true;
   $('#copyMsg').textContent = '';
 }
@@ -1293,9 +1341,17 @@ function md(d) { return (d.getMonth() + 1) + '/' + d.getDate() + '(' + WD[d.getD
 function currentCode() {
   const d = new Date();
   const ye = entryFor(addDays(d, -1));
-  if (d.getHours() < 9 && isNight(ye)) return { code: ye, carry: true };
+  /* 어제 시작한 야간은 다음 날 퇴근 시각(N2 11:00, N1 09:00)까지 이어져요 */
+  if (isNight(ye) && d.getHours() * 60 + d.getMinutes() < toMin(nightRole().end)) return { code: ye, carry: true };
   const te = entryFor(d);
   return te ? { code: te, carry: false } : null;
+}
+function nextWork(from) {
+  for (let i = 1; i <= 21; i++) {
+    const day = addDays(from, i), c = entryFor(day);
+    if (c && c !== 'off') return { day, code: c, i };
+  }
+  return null;
 }
 function updateSchedLine() {
   const el = $('#schedLine');
@@ -1309,18 +1365,19 @@ function updateSchedLine() {
     return;
   }
   const cur = currentCode();
+  const NR = nightRole();
   const parts = [];
-  if (cur && cur.carry) parts.push('지금 <b>야간</b> (어제 15:00 출근 · 09:00 퇴근)');
-  else parts.push(cur ? '오늘 <b>' + CODES[cur.code].label + '</b>' : '오늘 <b>입력 안 됨</b>');
+  if (cur && cur.carry) parts.push('지금 <b>야간 ' + NR.chip + '</b> (어제 ' + NR.arrive + ' 출근 · ' + NR.end + ' 퇴근)');
+  else parts.push(cur ? '오늘 <b>' + codeLabel(cur.code) + '</b>' : '오늘 <b>입력 안 됨</b>');
   const from = cur && cur.carry ? 0 : 1;
   const tm = entryFor(addDays(now, 1));
-  /* 야간은 다음 날 09:00에 끝나서, 근무표에 휴무로 적힌 다음 날도 아침까지는 근무 중 */
-  if (!(cur && cur.carry) && tm === 'off') parts.push(cur && isNight(cur.code) ? '내일 <b>09:00 퇴근</b> 후 휴무' : '내일 <b>휴무</b>');
+  /* 야간은 다음 날 아침(N2 11:00)에 끝나서, 근무표에 휴무로 적힌 다음 날도 퇴근 전까지는 근무 중 */
+  if (!(cur && cur.carry) && tm === 'off') parts.push(cur && isNight(cur.code) ? '내일 <b>' + NR.end + ' 퇴근</b> 후 휴무' : '내일 <b>휴무</b>');
   for (let i = from; i <= 21; i++) {
     const day = addDays(now, i), c = entryFor(day);
     if (c && c !== 'off') {
       const when = i === 0 ? '오늘' : i === 1 ? '내일' : md(day);
-      parts.push((i === 1 ? '' : '다음 ') + when + ' <b>' + CODES[c].label + '</b>');
+      parts.push((i <= 1 ? '' : '다음 ') + when + ' <b>' + codeLabel(c) + '</b>');
       break;
     }
   }
@@ -1344,7 +1401,7 @@ function maybeAutoSelect() {
     const last = store.get('last:' + c, pool[0]);
     role = pool.indexOf(last) >= 0 ? last : pool[0];
   } else if (isNight(c)) {
-    role = 'n';
+    role = nslot();
     if (c === 'n3') nvar = '3';
     if (c === 'n2') nvar = '2';
   }
@@ -1422,7 +1479,7 @@ $('#groupSeg').addEventListener('click', e => {
   const b = e.target.closest('button[data-g]'); if (!b) return;
   manualDay = dk(new Date());
   const g = GROUPS.find(x => x.id === b.dataset.g);
-  const last = store.get('last:' + g.id, g.roles[0]);
+  const last = g.id === 'n' ? nslot() : store.get('last:' + g.id, g.roles[0]);
   state.role = g.roles.indexOf(last) >= 0 ? last : g.roles[0];
   store.set('role', state.role);
   renderAll();
@@ -1430,7 +1487,12 @@ $('#groupSeg').addEventListener('click', e => {
 $('#roleChips').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   manualDay = dk(new Date());
-  if (b.dataset.r) { state.role = b.dataset.r; store.set('role', state.role); store.set('last:' + ROLES[state.role].group, state.role); }
+  if (b.dataset.r) {
+    state.role = b.dataset.r; store.set('role', state.role);
+    const g = ROLES[state.role].group;
+    store.set('last:' + g, state.role);
+    if (g === 'n') store.set('nslot', state.role);
+  }
   if (b.dataset.v) { state.nvar = b.dataset.v; store.set('nvar', state.nvar); }
   renderAll();
 });
@@ -1471,7 +1533,7 @@ document.addEventListener('click', e => {
 });
 $('#copyBtn').addEventListener('click', () => {
   const R = ROLES[state.role];
-  const text = '[' + (R.group === 'n' ? '야간 N1' : R.pill) + ' 알림]\n' + R.alarms.map(a => a.at + '  ' + a.label).join('\n');
+  const text = '[' + (state.role === 'n' ? '야간 N1' : R.pill) + ' 알림]\n' + R.alarms.map(a => a.at + '  ' + a.label).join('\n');
   const msg = $('#copyMsg'), ta = $('#copyFallback');
   const ok = () => { msg.textContent = '복사했어요'; ta.hidden = true; };
   const fail = () => { ta.hidden = false; ta.value = text; ta.focus(); ta.select(); msg.textContent = '아래 글을 길게 눌러 복사하세요'; };
